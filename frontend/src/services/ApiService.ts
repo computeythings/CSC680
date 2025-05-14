@@ -58,7 +58,6 @@ export async function apiRequest<T = any>(
     }
     
     const response = await fetch(url, payload)
-    console.log(response)
     const statusCode = response.status
     
     // parse response

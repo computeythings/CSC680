@@ -7,6 +7,9 @@ class JWT {
     }
     
     public static function generateToken($payload) {
+        if (!isset(self::$secret)) { 
+            self::init(); 
+        }
         $header = json_encode([
             "typ" => "JWT",
             "alg" => "HS256"
@@ -28,6 +31,9 @@ class JWT {
     
     // Check if the token is valid and signed by this server
     public static function validateToken($token) {
+        if (!isset(self::$secret)) { 
+            self::init(); 
+        }
         $tokenParts = explode(".", $token);
         if (count($tokenParts) != 3) {
             throw new Exception("Invalid token format");
