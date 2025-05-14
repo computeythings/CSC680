@@ -109,6 +109,7 @@ export const authApi = {
     }
     
     const result = await apiRequest<LoginResponse>("/login.php", "POST", "", { username, password })
+    console.log(result)
     
     // Transform the response structure to match what our app expects
     if (result.data && result.data.status === "success" && result.data.data) {
