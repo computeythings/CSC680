@@ -11,11 +11,11 @@ export default function Sidebar() {
   if (!isClient) return null;
 
   const navItems: Record<string, { name: string; href: string }[]> = username ? {
-      '' : [{ name: 'Login', href: '/login/' }],
-      'login': [{ name: 'Home', href: '/' }]
-  } : {
       '' : [{ name: 'Users', href: '/users/' }],
       'users' : [{ name: 'Home', href: '/' }, { name: 'Add User', href: '/users/add' }, { name: 'Update User', href: '/users/update' }, { name: 'Delete User', href: '/users/delete' }],
+  } : {
+      '' : [{ name: 'Login', href: '/login/' }],
+      'login': [{ name: 'Home', href: '/' }]
   }
   const items = navItems[currentPath.split('/')[1]] ?? [];
 
