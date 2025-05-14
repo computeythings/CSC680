@@ -108,7 +108,7 @@ export const authApi = {
       }
     }
     
-    const result = await apiRequest<LoginResponse>("/login", "POST", "", { username, password })
+    const result = await apiRequest<LoginResponse>("/login.php", "POST", "", { username, password })
     
     // Transform the response structure to match what our app expects
     if (result.data && result.data.status === "success" && result.data.data) {
@@ -137,24 +137,24 @@ export const authApi = {
 export const usersApi = {
   // Get user by username
   getLoginList: async () => {
-    return apiRequest("/users", "GET", "loginlist")
+    return apiRequest("/users.php", "GET", "loginlist")
   },
   // Get user by username
   getUser: async (user: string) => {
-    return apiRequest("/users", "GET", `user=${encodeURIComponent(user)}`)
+    return apiRequest("/users.php", "GET", `user=${encodeURIComponent(user)}`)
   },
   // Update user
   addUser: async (userData: any) => {
-    return apiRequest("/users", "POST", "", userData)
+    return apiRequest("/users.php", "POST", "", userData)
   },
   // Update user
   updateUser: async (userId: string, userData: any) => {
     userData["id"] = userId
-    return apiRequest("/users", "PATCH", "", userData)
+    return apiRequest("/users.php", "PATCH", "", userData)
   },
   // Delete user
   deleteUser: async (userId: string) => {
-    return apiRequest("/users", "DELETE", "", {id: userId})
+    return apiRequest("/users.php", "DELETE", "", {id: userId})
   }
 }
 

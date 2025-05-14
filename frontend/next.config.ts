@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
         return [
             {
                 source: '/api/:path*', // Match any requests to /api/*
-                destination: `http://localhost:8000/api/:path*.php`, // Proxy to your backend server
+                destination: `http://localhost:8000/api/:path*`, // Proxy to your backend server
             },
         ];
     },
