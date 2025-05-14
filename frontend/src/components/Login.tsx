@@ -1,43 +1,112 @@
-import React, { useState } from 'react';
-import Password from "@/components/Password";
-import Username from "@/components/Username";
+import React, { useEffect, useState } from 'react'
+import Password from "@/components/Password"
+import Username from "@/components/Username"
+import { useAuth } from '@/contexts/auth';
+import { useRouter } from 'next/router';
+import { usersApi } from '@/services/ApiService';
 
 export default function Login() {
-  const [selectedUser, setSelectedUser] = useState("");
-  const handleUser = (text: string) => {
-    setSelectedUser(prev => (prev === text ? "" : text));
+  const router = useRouter()
+  const { username, login } = useAuth()
+  const [isLoading, setIsLoading] = useState(true)
+  const [selectedUser, setSelectedUser] = useState("")
+  const [selectedPassword, setSelectedPassword] = useState("")
+  const [passwords, setPasswords] = useState<Set<string>>(new Set([
+    "qT9!rE2z",
+    "L0g1n#Key",
+    "xYz$782!",
+    "M@nager42",
+    "sEcUr3#Me",
+    "pa55Word!",
+    "Zebra$94",
+    "T1me2Fly*"
+  ]));
+  const [users, setUsers] = useState<Set<string>>(new Set([
+    "jsmith",
+    "lwilliams",
+    "tjohnson",
+    "abrown",
+    "kdavis",
+    "mmiller",
+    "rwilson",
+    "smoore"
+  ]));
+  const addPassword = (value: string) => {
+    setPasswords(prev => new Set(prev).add(value));
   };
-  const [selectedPassword, setSelectedPassword] = useState("");
+   const addUser = (value: string) => {
+    setUsers(prev => new Set(prev).add(value));
+  };
+
+  useEffect(() => {
+    usersApi.getLoginList().then(res => {
+      if (res.statusCode == 200) {
+        res.data.data.forEach((creds: any) => {
+          console.log(creds)
+          addPassword(creds["passwordstring"])
+          addUser(creds["user"])
+        })
+      } else {
+        alert("unable to contact login server.")
+      }
+    })
+    setIsLoading(false)
+  }, [username, router])
+  if (isLoading) {
+    return null
+  }
+  if (username) {
+    const redirect = localStorage.getItem("redirect")
+    router.push(redirect || '/')
+    return null
+  }
+  const handleUser = (text: string) => {
+    setSelectedUser(prev => (prev === text ? "" : text))
+  }
   
   const handlePassword = (text: string) => {
-    setSelectedPassword(prev => (prev === text ? "" : text));
-  };
-  const passwords = ["testpassword1","testpassword2","testpassword3","testpassword4"]
-  const users = ["testuser1","testuser2","testuser3","testuser4"]
+    setSelectedPassword(prev => (prev === text ? "" : text))
+  }
+
+
+  const handleSubmit = () => {
+    login(selectedUser, selectedPassword).then(res => {
+      if (!res) {
+        alert("TODO: error stuff")
+        setSelectedUser("")
+        setSelectedPassword("")
+      }
+    })
+  }
+
   return (
-    <div className="flex items-center justify-center p-0">
-        {passwords.map(pwd => (
+    <div className="w-full flex items-center justify-center p-0">
+        {[...passwords].map(pwd => (
             <Password
+            key={pwd}
             text={pwd}
             isSelected={selectedPassword === pwd}
             onClick={() => handlePassword(pwd)}
             />
         ))}
-        {users.map(username => (
-            <Password
+        {[...users].map(username => (
+            <Username
+            key={username}
             text={username}
             isSelected={selectedUser === username}
             onClick={() => handleUser(username)}
             />
         ))}
         
-        <div className="w-screen flex items-center justify-center">
+        <div className="flex items-center justify-center">
             <button
+                onClick={handleSubmit}
                 type="submit"
-                className="text-blue-500 underline hover:text-blue-700 cursor-pointer bg-white p-2">
-                LOGIN
+                className={`bg-white p-2 ${(selectedUser !== '' && selectedPassword != '') ?'text-blue-500 underline hover:text-blue-700 cursor-pointer' : 'text-white'}`}>
+                SUBMIT
             </button>
         </div>
     </div>
-  );
+  )
+  
 }

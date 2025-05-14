@@ -1,20 +1,84 @@
 <?php
-// Check if the request method is POST
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Retrieve the username and password from POST data
-    $username = $_POST['username'] ?? '';
-    $password = $_POST['password'] ?? '';
+require_once "../../utils/jwt.php";
+require_once "../../utils/db.php";
 
-    $correctUsername = 'admin';
-    $correctPassword = 'password123';
+header("Content-Type: application/json");
+
+// Only allow POST requests
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    http_response_code(405);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Method not allowed."
+    ]);
+    exit;
+}
+
+// Parse request body
+$requestData = json_decode(file_get_contents("php://input"), true);
+if (!$requestData || 
+    !isset($requestData["username"]) || 
+    !isset($requestData["password"]) ||
+    empty($requestData["username"]) ||
+    empty($requestData["password"])) {
+    
+    http_response_code(400);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Missing required fields."
+    ]);
+    exit;
+}
+
+$username = $requestData["username"];
+$password = $requestData["password"];
+
+try {
+    $res = DB::getLoginData($username);
+
+    if ($res) {
+        $storedUser = $res["user"];
+        $storedHash = $res["password"];
+    }
 
     // Authenticate the user
-    if ($username === $correctUsername && $password === $correctPassword) {
-        echo json_encode(['status' => 'success', 'message' => 'Login successful']);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Invalid username or password']);
+    if (!$storedUser || !password_verify($password, $storedHash)) {
+        error_log("Failed login to $username");
+        error_log("Found User: $storedUser");
+        error_log("Password Match: " . password_verify($password, $storedHash));
+
+        http_response_code(401);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Invalid credentials"
+        ]);
+        exit;
     }
-} else {
-    // If the request method is not POST, return an error response
-    echo json_encode(['status' => 'error', 'message' => 'Only POST requests are allowed']);
+
+    $token = JWT::generateToken([
+        "id" => $res["id"],
+        "firstName" => $res["firstname"],
+        "lastName" => $res["lastname"],
+        "username" => $storedUser,
+        "exp" => time() + (60 * 60 * 24 * 7)
+    ]);
+
+    // Return successful response with token
+    http_response_code(200);
+    echo json_encode([
+        "status" => "success",
+        "message" => "Login successful",
+        "data" => [
+            "token" => $token,
+            "expires_in" => 60 * 60 * 24 * 7
+        ]
+    ]);
+
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Database error."
+    ]);
+    error_log("SERVER ERROR: ". $e->getMessage());
 }

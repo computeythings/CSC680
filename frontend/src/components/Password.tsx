@@ -6,23 +6,20 @@ interface PasswordProps {
   onClick?: () => void;
 }
 
-export default function Password({ text, isSelected, onClick }: PasswordProps) {
-  // Generate random initial position
+export default function Password({ text, isSelected, onClick}: PasswordProps) {
   const [position, setPosition] = useState(() => {
     if (typeof window !== 'undefined') {
       return { 
+        // random initial position
         x: Math.random() * (window.innerWidth - 200), 
         y: Math.random() * (window.innerHeight - 100)
       };
     }
-    
-    // Fallback for server rendering
     return { x: 50, y: 50 };
   });
   
-  // Generate random velocity
   const [velocity, setVelocity] = useState(() => {
-    // Random direction with speed between 2-5
+    // random direction, speed between 2-5
     const speed = 2 + Math.random() * 3;
     const angle = Math.random() * Math.PI * 2;
     
@@ -50,10 +47,10 @@ export default function Password({ text, isSelected, onClick }: PasswordProps) {
       let newY = position.y + velocity.y;
       let newVelocity = { ...velocity };
       
-      // Check for horizontal bounds
+      // horizontal bounds
       if (newX + text.width > viewport.width || newX < 0) {
         newVelocity.x = -velocity.x;
-        // Adjust position to keep within bounds
+        // bounds check
         if (newX + text.width > viewport.width) {
           newX = viewport.width - text.width;
         }
@@ -62,10 +59,10 @@ export default function Password({ text, isSelected, onClick }: PasswordProps) {
         }
       }
       
-      // Check for vertical bounds
+      // vertical bounds
       if (newY + text.height > viewport.height || newY < 0) {
         newVelocity.y = -velocity.y;
-        // Adjust position to keep within bounds
+        // bounds check
         if (newY + text.height > viewport.height) {
           newY = viewport.height - text.height;
         }
@@ -78,7 +75,7 @@ export default function Password({ text, isSelected, onClick }: PasswordProps) {
       setVelocity(newVelocity);
     };
     
-    // Animation frame
+    // animation frame
     let frameId: number;
     const frame = () => {
       animate();
@@ -92,7 +89,7 @@ export default function Password({ text, isSelected, onClick }: PasswordProps) {
       const viewport = getViewportDimensions();
       const text = textRef.current.getBoundingClientRect();
       
-      // Stay in bounds after resize
+      // bounds check
       let newX = position.x;
       let newY = position.y;
       
@@ -109,7 +106,7 @@ export default function Password({ text, isSelected, onClick }: PasswordProps) {
     
     window.addEventListener('resize', handleResize);
     
-    // Cleanup
+    // cleanup
     return () => {
       cancelAnimationFrame(frameId);
       window.removeEventListener('resize', handleResize);
