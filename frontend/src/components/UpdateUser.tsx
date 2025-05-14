@@ -30,7 +30,12 @@ export default function UpdateUser() {
     localStorage.removeItem("redirect")
     
     const updateUser = (data: any): Promise<ApiResponse<any>> => {
-        return usersApi.updateUser(foundUser!.id, data)
+        return usersApi.updateUser(foundUser!.id, data).then(res=> {
+            if (res.statusCode == 200) {
+                setFoundUser(null)
+            }
+            return res
+        })
     }
     
     const onResult = (data: any) => {

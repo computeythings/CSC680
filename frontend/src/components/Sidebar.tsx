@@ -10,7 +10,7 @@ export default function Sidebar() {
   const currentPath = usePathname();
   if (!isClient) return null;
 
-  const navItems: Record<string, { name: string; href: string }[]> = username === "" ? {
+  const navItems: Record<string, { name: string; href: string }[]> = username ? {
       '' : [{ name: 'Login', href: '/login/' }],
       'login': [{ name: 'Home', href: '/' }]
   } : {
