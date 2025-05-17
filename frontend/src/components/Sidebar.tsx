@@ -2,36 +2,52 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/auth';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
+interface MenuItem {
+  name: string,
+  href: string
+}
 
 export default function Sidebar() {
-  const { user, logout, isClient } = useAuth()
-  const currentPath = usePathname();
-  if (!isClient) return null;
-  const noAuthMenu = [{ name: 'Login', href: '/login/' }]
   const mainMenu = [{ name: 'Home', href: '/' }, { name: 'Users', href: '/users/' }, { name: 'Parking', href: '/parking/' }]
-
-  const navItems: Record<string, { name: string; href: string }[]> = user ? {
-      '' : [{ name: 'Users', href: '/users/' }, { name: 'Parking', href: '/parking/' }],
-      'users' : [{ name: 'Home', href: '/' }, { name: 'Parking', href: '/parking/' }, { name: 'Add User', href: '/users/add' }, { name: 'Update User', href: '/users/update' }, { name: 'Delete User', href: '/users/delete' }],
-      'parking' : [{ name: 'Home', href: '/' }, { name: 'Users', href: '/users/' }],
-  } : {
-      '' : [{ name: 'Login', href: '/login/' }],
-      'login': [{ name: 'Home', href: '/' }]
+  const subMenus: Record<string, MenuItem[]> = {
+    'users' : [{ name: 'Add User', href: '/users/add' }, { name: 'Update User', href: '/users/update' }, { name: 'Delete User', href: '/users/delete' }],
+    'parking': [{ name: 'Parking Permit', href: '/parking/permit' }, { name: 'Checkout', href: '/parking/checkout' }]
   }
-  const items = user ? mainMenu : noAuthMenu
+  const basePath = usePathname().split('/')[1]
+  const { user, logout } = useAuth()
+  const [menu, setMenu]  = useState<MenuItem[]>([])
+  const [subMenu, setSubMenu]  = useState<MenuItem[]>([])
+  useEffect(() => {
+    if (user) {
+      setMenu(mainMenu)
+      setSubMenu(subMenus[basePath])
+      console.log(basePath)
+    } else {
+      setMenu( basePath == 'login' ? [{ name: 'Home', href: '/' }] : [{ name: 'Login', href: '/login/' }])
+    }
+  }, [user, basePath])
 
   return (
-    <aside className="flex flex-col bg-white p-4 shadow-lg w-1/10 min-w-48 border-r-1 border-black">
+    <aside className="flex flex-col bg-white p-4 shadow-lg w-1/10 min-w-48 border-r-[1px] border-black">
       <nav className="space-y-2 w-48">
-        {items.map( item => (
+        {menu.map( item => (
         <div key={item.name}>
           <Link 
             href={item.href} 
             className="text-lg font-medium text-blue-500 underline hover:text-blue-700 cursor-pointer">
             {item.name}
           </Link>
+          {item.href == `/${basePath}/` && subMenu && subMenu.map( subitem => (
+          <div key={subitem.name}>
+            <Link 
+              href={subitem.href} 
+              className="text-lg font-medium text-blue-500 underline hover:text-blue-700 cursor-pointer ml-4">
+              {subitem.name}
+            </Link>
+          </div>
+          ))}
         </div>
         ))}
       </nav>

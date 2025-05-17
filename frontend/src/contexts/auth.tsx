@@ -9,7 +9,7 @@ interface AuthContextType {
     logout: () => void
 }
 
-export interface UserInfo {
+interface UserInfo {
     id: number
     firstName: string
     lastName: string
