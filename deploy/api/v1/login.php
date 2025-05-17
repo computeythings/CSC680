@@ -14,6 +14,15 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     exit;
 }
 
+$userip = "";
+var_dump($_SERVER);
+if (!empty($_SERVER["HTTP_X_FORWARDED_FOR"])) {
+    $userip = explode(",", $_SERVER["HTTP_X_FORWARDED_FOR"])[0];
+} else {
+    $userip =  $_SERVER["REMOTE_ADDR"] ?? "UNKNOWN";
+}
+error_log("$userip: Login Request");
+
 // Parse request body
 $requestData = json_decode(file_get_contents("php://input"), true);
 if (!$requestData || 
@@ -36,43 +45,39 @@ $password = $requestData["password"];
 try {
     $res = DB::getLoginData($username);
 
-    if ($res) {
+    if ($res && isset($res["user"]) && isset($res["password"])) {
         $storedUser = $res["user"];
         $storedHash = $res["password"];
+        if (password_verify($password, $storedHash)) {
+            $token = JWT::generateToken([
+                "id" => $res["id"],
+                "firstName" => $res["firstname"],
+                "lastName" => $res["lastname"],
+                "username" => $storedUser,
+                "exp" => time() + (60 * 60 * 24 * 7)
+            ]);
+
+            // Return successful response with token
+            http_response_code(200);
+            echo json_encode([
+                "status" => "success",
+                "message" => "Login successful",
+                "data" => [
+                    "token" => $token,
+                    "expires_in" => 60 * 60 * 24 * 7
+                ]
+            ]);
+            exit;
+        }
     }
+    error_log("Failed login to $username");
 
-    // Authenticate the user
-    if (!$storedUser || !password_verify($password, $storedHash)) {
-        error_log("Failed login to $username");
-        error_log("Found User: $storedUser");
-        error_log("Password Match: " . password_verify($password, $storedHash));
-
-        http_response_code(401);
-        echo json_encode([
-            "status" => "error",
-            "message" => "Invalid credentials"
-        ]);
-        exit;
-    }
-
-    $token = JWT::generateToken([
-        "id" => $res["id"],
-        "firstName" => $res["firstname"],
-        "lastName" => $res["lastname"],
-        "username" => $storedUser,
-        "exp" => time() + (60 * 60 * 24 * 7)
-    ]);
-
-    // Return successful response with token
-    http_response_code(200);
+    http_response_code(401);
     echo json_encode([
-        "status" => "success",
-        "message" => "Login successful",
-        "data" => [
-            "token" => $token,
-            "expires_in" => 60 * 60 * 24 * 7
-        ]
+        "status" => "error",
+        "message" => "Invalid credentials"
     ]);
+    exit;
 
 } catch (PDOException $e) {
     http_response_code(500);

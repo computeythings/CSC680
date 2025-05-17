@@ -4,28 +4,28 @@ require_once "../../utils/db.php";
 
 header("Content-Type: application/json");
 
-// // validate token for all requests
-// $headers = getallheaders();
-// $auth_header = isset($headers["Authorization"]) ? $headers["Authorization"] : "";
-// // fetch sends headers in all lowercase
-// if (empty($auth_header)) {
-//     $auth_header = isset($headers["authorization"]) ? $headers["authorization"] : "";
-// }
+// validate token for all requests
+$headers = getallheaders();
+$auth_header = isset($headers["Authorization"]) ? $headers["Authorization"] : "";
+// fetch sends headers in all lowercase
+if (empty($auth_header)) {
+    $auth_header = isset($headers["authorization"]) ? $headers["authorization"] : "";
+}
 
-// if (empty($auth_header) || !preg_match("/Bearer\s(\S+)/", $auth_header, $matches)) {
-//     http_response_code(401);
-//     echo json_encode(["status" => "error", "message" => "unauthorized"]);
-//     exit();
-// }
+if (empty($auth_header) || !preg_match("/Bearer\s(\S+)/", $auth_header, $matches)) {
+    http_response_code(401);
+    echo json_encode(["status" => "error", "message" => "unauthorized"]);
+    exit();
+}
 
-// $token = $matches[1];
-// $valid = JWT::validateToken($token);
+$token = $matches[1];
+$valid = JWT::validateToken($token);
 
-// if (!$valid) {
-//     http_response_code(401);
-//     echo json_encode(["status" => "error", "message" => "invalid token"]);
-//     exit();
-// }
+if (!$valid) {
+    http_response_code(401);
+    echo json_encode(["status" => "error", "message" => "invalid token"]);
+    exit();
+}
 if ($_SERVER["REQUEST_METHOD"] === "GET" && empty($_SERVER["QUERY_STRING"])) {
     #TODO: return get all parking lots
     try {
