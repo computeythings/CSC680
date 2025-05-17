@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && empty($_SERVER["QUERY_STRING"])) {
     exit();
 }
 
-// Query `?lot=<lot_id>&floor=<floor_level>`
+// Query `?lot_id=<lot_id>&floor=<floor_level>`
 if (isset($_GET["lot_id"])) {
     $lot = $_GET["lot_id"];
     try {

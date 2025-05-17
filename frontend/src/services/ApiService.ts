@@ -41,7 +41,7 @@ export async function apiRequest<T = any>(
         credentials: "omit",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`, // include auth token in header
         },
         body: JSON.stringify(data)
       }
@@ -51,9 +51,10 @@ export async function apiRequest<T = any>(
         credentials: "omit",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${token}`, // include auth token in header
         }
       }
+      // Append query string to URL
       if (queryString != "") url+= `?${queryString}`;
     }
     
@@ -69,23 +70,23 @@ export async function apiRequest<T = any>(
       responseData = await response.text()
     }
     
-    // Check for API error responses in different formats
     if (!response.ok) {
       return {
         status: "error",
+        // handle errors or timeouts
         message: typeof responseData === "object" && responseData !== null 
           ? (responseData.message || responseData.error || "API request failed") 
           : "API request failed",
-        statusCode,
+        statusCode
       }
     }
     
-    // For successful responses
     return {
       data: responseData as T,
       statusCode,
     }
   } catch (error) {
+    // handle client-side errors
     console.error("API request error:", error)
     return {
       status: "error",
@@ -96,7 +97,6 @@ export async function apiRequest<T = any>(
 }
 
 export const authApi = {
-  // Login user
   login: async (username: string, password: string) => {
     interface LoginResponse {
       status: string
@@ -104,26 +104,21 @@ export const authApi = {
       data: {
         token: string
         expires_in: number
-        user?: any // Optional user data that might be included
       }
     }
     
+    // POST request with no query strings and username/password payload
     const result = await apiRequest<LoginResponse>("/login.php", "POST", "", { username, password })
     
-    // Transform the response structure to match what our app expects
     if (result.data && result.data.status === "success" && result.data.data) {
       return {
         data: {
           token: result.data.data.token,
-          expires_in: result.data.data.expires_in,
-          // If user data is not included in the response, we might need to fetch it separately
-          user: result.data.data.user || { id: "unknown", username: username }
+          expires_in: result.data.data.expires_in
         },
         statusCode: result.statusCode
       }
     }
-    
-    // Return the error if login failed
     return {
       error: result.status === "error" || (result.data?.message || "Login failed"),
       statusCode: result.statusCode
@@ -135,27 +130,44 @@ export const authApi = {
  * Users API functions
  */
 export const usersApi = {
-  // Get user by username
+  // get list of login credentials
   getLoginList: async () => {
     return apiRequest("/users.php", "GET", "loginlist")
   },
-  // Get user by username
   getUser: async (user: string) => {
     return apiRequest("/users.php", "GET", `user=${encodeURIComponent(user)}`)
   },
-  // Update user
   addUser: async (userData: any) => {
     return apiRequest("/users.php", "POST", "", userData)
   },
-  // Update user
   updateUser: async (userId: string, userData: any) => {
     userData["id"] = userId
     return apiRequest("/users.php", "PATCH", "", userData)
   },
-  // Delete user
   deleteUser: async (userId: string) => {
     return apiRequest("/users.php", "DELETE", "", {id: userId})
   }
 }
 
-// Add other API modules as needed for your application
+export const parkingApi = {
+  // get list of login credentials
+  getLots: async () => {
+    return apiRequest("/parking.php", "GET", "")
+  },
+  getLot: async (lotID: number, floor=-1) => {
+    if (floor === -1) {
+      return apiRequest("/parking.php", "GET", `lot_id=${encodeURIComponent(lotID)}`)
+    }
+    return apiRequest("/parking.php", "GET", `lot_id=${encodeURIComponent(lotID)}&floor=${encodeURIComponent(floor)}`)
+  },
+  addUser: async (userData: any) => {
+    return apiRequest("/users.php", "POST", "", userData)
+  },
+  updateUser: async (userId: string, userData: any) => {
+    userData["id"] = userId
+    return apiRequest("/users.php", "PATCH", "", userData)
+  },
+  deleteUser: async (userId: string) => {
+    return apiRequest("/users.php", "DELETE", "", {id: userId})
+  }
+}

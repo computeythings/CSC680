@@ -48,8 +48,9 @@ export default function Login() {
       } else {
         alert("unable to contact login server.")
       }
+    }).finally(() =>{
+      setIsLoading(false)
     })
-    setIsLoading(false)
   }, [user, router])
   if (isLoading) {
     return null

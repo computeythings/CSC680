@@ -15,7 +15,6 @@ if ($_SERVER["REQUEST_METHOD"] !== "POST") {
 }
 
 $userip = "";
-var_dump($_SERVER);
 if (!empty($_SERVER["HTTP_X_FORWARDED_FOR"])) {
     $userip = explode(",", $_SERVER["HTTP_X_FORWARDED_FOR"])[0];
 } else {
@@ -56,7 +55,7 @@ try {
                 "username" => $storedUser,
                 "exp" => time() + (60 * 60 * 24 * 7)
             ]);
-
+            
             // Return successful response with token
             http_response_code(200);
             echo json_encode([

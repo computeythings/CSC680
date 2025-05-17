@@ -12,8 +12,8 @@ interface MenuItem {
 export default function Sidebar() {
   const mainMenu = [{ name: 'Home', href: '/' }, { name: 'Users', href: '/users/' }, { name: 'Parking', href: '/parking/' }]
   const subMenus: Record<string, MenuItem[]> = {
-    'users' : [{ name: 'Add User', href: '/users/add' }, { name: 'Update User', href: '/users/update' }, { name: 'Delete User', href: '/users/delete' }],
-    'parking': [{ name: 'Parking Permit', href: '/parking/permit' }, { name: 'Checkout', href: '/parking/checkout' }]
+    'users' : [{ name: 'Add User', href: '/users/add/' }, { name: 'Update User', href: '/users/update/' }, { name: 'Delete User', href: '/users/delete/' }],
+    'parking': [{ name: 'Lots', href: '/parking/lots/' }, { name: 'Permit', href: '/parking/permit/' }, { name: 'Checkout', href: '/parking/checkout/' }]
   }
   const basePath = usePathname().split('/')[1]
   const { user, logout } = useAuth()
@@ -23,7 +23,6 @@ export default function Sidebar() {
     if (user) {
       setMenu(mainMenu)
       setSubMenu(subMenus[basePath])
-      console.log(basePath)
     } else {
       setMenu( basePath == 'login' ? [{ name: 'Home', href: '/' }] : [{ name: 'Login', href: '/login/' }])
     }

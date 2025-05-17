@@ -160,12 +160,10 @@ class DB {
                 WHERE lot_id = :lot_id
             ";
         if ($level !== "") {
-            error_log("getting spaces for lot $lot_id, floor $level");
             $sql = $sql . " AND level = :level";
             $stmt = $pdo->prepare($sql);
             $stmt->bindParam(":level", $level, PDO::PARAM_STR);
         } else {
-            error_log("getting all spaces for lot $lot_id");
             $stmt = $pdo->prepare($sql);
         }
         $stmt->bindParam(":lot_id", $lot_id, PDO::PARAM_STR);
