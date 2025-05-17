@@ -6,7 +6,7 @@ import UserForm from './UserForm';
 import { ApiResponse, usersApi } from '@/services/ApiService';
 
 export default function UpdateUser() {
-    const { username } = useAuth()
+    const { user } = useAuth()
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(true)
     const [foundUser, setFoundUser] = useState<null | {
@@ -18,11 +18,11 @@ export default function UpdateUser() {
     }>(null);
     useEffect(() => {
         setIsLoading(false)
-    }, [username, router])
+    }, [user, router])
     if (isLoading) {
         return null
     }
-    if (!username) {
+    if (!user) {
         localStorage.setItem("redirect", "/users/update/")
         router.push('/login/')
         return null

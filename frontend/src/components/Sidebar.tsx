@@ -6,18 +6,21 @@ import { useEffect } from 'react';
 
 
 export default function Sidebar() {
-  const { username, logout, isClient } = useAuth()
+  const { user, logout, isClient } = useAuth()
   const currentPath = usePathname();
   if (!isClient) return null;
+  const noAuthMenu = [{ name: 'Login', href: '/login/' }]
+  const mainMenu = [{ name: 'Home', href: '/' }, { name: 'Users', href: '/users/' }, { name: 'Parking', href: '/parking/' }]
 
-  const navItems: Record<string, { name: string; href: string }[]> = username ? {
-      '' : [{ name: 'Users', href: '/users/' }],
-      'users' : [{ name: 'Home', href: '/' }, { name: 'Add User', href: '/users/add' }, { name: 'Update User', href: '/users/update' }, { name: 'Delete User', href: '/users/delete' }],
+  const navItems: Record<string, { name: string; href: string }[]> = user ? {
+      '' : [{ name: 'Users', href: '/users/' }, { name: 'Parking', href: '/parking/' }],
+      'users' : [{ name: 'Home', href: '/' }, { name: 'Parking', href: '/parking/' }, { name: 'Add User', href: '/users/add' }, { name: 'Update User', href: '/users/update' }, { name: 'Delete User', href: '/users/delete' }],
+      'parking' : [{ name: 'Home', href: '/' }, { name: 'Users', href: '/users/' }],
   } : {
       '' : [{ name: 'Login', href: '/login/' }],
       'login': [{ name: 'Home', href: '/' }]
   }
-  const items = navItems[currentPath.split('/')[1]] ?? [];
+  const items = user ? mainMenu : noAuthMenu
 
   return (
     <aside className="flex flex-col bg-white p-4 shadow-lg w-1/10 min-w-48 border-r-1 border-black">
@@ -32,9 +35,9 @@ export default function Sidebar() {
         </div>
         ))}
       </nav>
-      <div className={`mt-auto ${username ? '' : 'hidden'}`}>
+      <div className={`mt-auto ${user ? '' : 'hidden'}`}>
         <div className="flex flex-col text-black">
-        {username ? `User: ${username}` : ''}
+        {user ? `${user.firstName} ${user.lastName}` : ''}
         <span 
           onClick={logout}
           className="text-lg font-medium text-blue-500 underline hover:text-blue-700 cursor-pointer">

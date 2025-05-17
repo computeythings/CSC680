@@ -34,7 +34,7 @@ export function useCookies() {
     if (options.expires) cookieString += `;expires=${options.expires.toUTCString()}`;
     if (options.maxAge) cookieString += `;max-age=${options.maxAge}`;
     if (options.domain) cookieString += `;domain=${options.domain}`;
-    if (options.secure) cookieString += `;secure`;
+    // if (options.secure) cookieString += `;secure`;
     if (options.sameSite) cookieString += `;samesite=${options.sameSite}`;
 
     document.cookie = cookieString;

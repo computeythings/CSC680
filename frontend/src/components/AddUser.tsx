@@ -5,16 +5,16 @@ import UserForm from './UserForm';
 import { ApiResponse, usersApi } from '@/services/ApiService';
 
 export default function AddUser() {
-  const { username } = useAuth()
+  const { user } = useAuth()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   useEffect(() => {
       setIsLoading(false)
-  }, [username, router])
+  }, [user, router])
   if (isLoading) {
     return null
   }
-  if (!username) {
+  if (!user) {
     localStorage.setItem("redirect", "/users/add/")
     router.push('/login/')
     return null

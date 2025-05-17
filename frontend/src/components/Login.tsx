@@ -7,7 +7,7 @@ import { usersApi } from '@/services/ApiService';
 
 export default function Login() {
   const router = useRouter()
-  const { username, login } = useAuth()
+  const { user, login } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState("")
   const [selectedPassword, setSelectedPassword] = useState("")
@@ -42,7 +42,6 @@ export default function Login() {
     usersApi.getLoginList().then(res => {
       if (res.statusCode == 200) {
         res.data.data.forEach((creds: any) => {
-          console.log(creds)
           addPassword(creds["passwordstring"])
           addUser(creds["user"])
         })
@@ -51,11 +50,11 @@ export default function Login() {
       }
     })
     setIsLoading(false)
-  }, [username, router])
+  }, [user, router])
   if (isLoading) {
     return null
   }
-  if (username) {
+  if (user) {
     const redirect = localStorage.getItem("redirect")
     router.push(redirect || '/')
     return null
