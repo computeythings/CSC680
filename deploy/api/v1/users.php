@@ -1,10 +1,8 @@
 <?php
-header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Authorization, Content-Type");
-
 require_once "../../utils/jwt.php";
 require_once "../../utils/db.php";
+
+header("Content-Type: application/json");
 
 // handle loginlist request without token validation
 if (isset($_GET["loginlist"])) {

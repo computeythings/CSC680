@@ -31,7 +31,11 @@ class DB {
         return self::$instance;
     }
 
-    public static function getUserData(string $username): ?array {
+    /*
+    *   /api/v1/users functions
+    */
+
+    public static function getUserData(string $username): array {
         $pdo = self::getInstance();
 
         $stmt = $pdo->prepare("
@@ -43,10 +47,10 @@ class DB {
         $stmt->execute();
 
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $res ?: null;
+        return $res ?: [];
     }
 
-    public static function getLoginData(string $username): ?array {
+    public static function getLoginData(string $username): array {
         $pdo = self::getInstance();
 
         $stmt = $pdo->prepare("
@@ -58,7 +62,7 @@ class DB {
         $stmt->execute();
 
         $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $res ?: null;
+        return $res ?: [];
     }
 
     public static function getLoginList(): ?array {
@@ -71,7 +75,7 @@ class DB {
         $stmt->execute();
 
         $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $res ?: null;
+        return $res ?: [];
     }
 
     public static function insertUser(array $userData): bool {
@@ -102,11 +106,11 @@ class DB {
         // Build the SET part of the SQL statement dynamically
         $setClauses = [];
         foreach ($userData as $column => $value) {
-            $setClauses[] = "`$column` = :$column";
+            $setClauses[] = "$column = :$column";
         }
         $setClause = implode(', ', $setClauses);
 
-        $sql = "UPDATE `user` SET $setClause WHERE `id` = :id";
+        $sql = "UPDATE user SET $setClause WHERE id = :id";
 
         $stmt = $pdo->prepare($sql);
 
@@ -132,7 +136,112 @@ class DB {
         $stmt->bindParam(":id", $userId, PDO::PARAM_STR);
         $stmt->execute();
 
-        $res = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $res ?: false;
+        return $stmt->rowCount() > 0;
+    }
+    
+    /*
+    *   /api/v1/parking functions
+    */
+
+    // get a list of all parking lots
+    public static function getLots(): array {
+        $pdo = self::getInstance();
+        $stmt = $pdo->prepare("SELECT * FROM parking_lot");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+    }
+
+    // get all spaces in a lot or on a specific floor of a lot
+    public static function getSpaces(string $lot_id, string $level): array {
+        $pdo = self::getInstance();
+        $sql = "
+                SELECT slot_id, level, parked
+                FROM parking
+                WHERE lot_id = :lot_id
+            ";
+        if ($level !== "") {
+            error_log("getting spaces for lot $lot_id, floor $level");
+            $sql = $sql . " AND level = :level";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(":level", $level, PDO::PARAM_STR);
+        } else {
+            error_log("getting all spaces for lot $lot_id");
+            $stmt = $pdo->prepare($sql);
+        }
+        $stmt->bindParam(":lot_id", $lot_id, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $res ?: [];
+    }
+
+    public static function generateParkingSlip(array $customer, string $lot_id): array {
+        $pdo = self::getInstance();
+        $now = new DateTime();
+        // add new customer
+        $sql = "
+            INSERT INTO customer (firstname, lastname, licenseplate, make, model)
+                VALUES(:firstname, :lastname, :licenseplate, :make, :model)
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":firstname", $customer["lastname"], PDO::PARAM_STR);
+        $stmt->bindValue(':lastname', $customer["lastname"], PDO::PARAM_STR);
+        $stmt->bindValue(':licenseplate', $customer["licenseplate"], PDO::PARAM_STR);
+        $stmt->bindValue(':make', $customer["make"], PDO::PARAM_STR);
+        $stmt->bindValue(':model', $customer["model"], PDO::PARAM_STR);
+        $stmt->execute();
+        $customer_id = $pdo->lastInsertId();
+        // park into first empty slot
+        $sql = "
+            INSERT INTO parking_slip (slot, customer, start)
+                SELECT slot_id, :customer, :created_at
+                FROM parking
+                WHERE lot_id = :lot_id
+                AND parked IS NULL
+                LIMIT 1;
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":lot_id", $lot_id, PDO::PARAM_STR);
+        $stmt->bindValue(':customer', $customer_id, PDO::PARAM_STR);
+        $stmt->bindValue(':created_at', $now->format('Y-m-d H:i:s'), PDO::PARAM_STR);
+        $stmt->execute();
+        $slip_id = $pdo->lastInsertId();
+
+        // get the spot number to put on the ticket
+        $sql = "SELECT spot FROM parking WHERE parked = :licenseplate LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":licenseplate", $customer["licenseplate"], PDO::PARAM_STR);
+        $stmt->execute();
+        $spot = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return [
+            "slip_id" => $slip_id,
+            "licenseplate" => $customer['licenseplate'],
+            "start" => $now->getTimestamp(),
+            "spot" => $spot
+        ];
+    }
+
+    // car leaves the parking lot
+    public static function vehicleExit(int $slip_id): int {
+        $pdo = self::getInstance();
+        // set the end time of a parking slip
+        $sql = "UPDATE parking_slip SET end = NOW() WHERE id = :id and end is NULL";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":id", $slip_id, PDO::PARAM_INT);
+        $stmt->execute();
+        if (!$rows) {
+            return -1;
+        }
+
+
+        // return the duration parked in minutes
+        $sql = "SELECT TIMESTAMPDIFF(MINUTE, start, end) FROM parking_slip WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":id", $slip_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $minutes = $stmt->fetch(PDO::FETCH_ASSOC)["TIMESTAMPDIFF(MINUTE, start, end)"];
+        return $minutes;
     }
 }
