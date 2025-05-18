@@ -83,7 +83,10 @@ CREATE TABLE user (
   UNIQUE (user)
 );
 
----
+--
+-- View for parking info
+--
+
 CREATE VIEW parking AS
 SELECT
     lot.id AS lot_id,
