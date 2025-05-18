@@ -43,8 +43,8 @@ export default function UpdateUser() {
     }
 
     return (
-        <div className="w-full content-center border">
-            <div className="bg-white mx-auto gap-4 text-black w-3/4">
+        <div className="w-full content-center">
+            <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                 {!foundUser ? (
                     <UserSearch title="Update User" found={onResult} />
                 ) : (

@@ -150,24 +150,25 @@ export const usersApi = {
 }
 
 export const parkingApi = {
-  // get list of login credentials
+  // get list of parking lot addresses and IDs
   getLots: async () => {
     return apiRequest("/parking.php", "GET", "")
   },
+  // get list of spaces in lot with option to specify floor
   getLot: async (lotID: number, floor=-1) => {
+    // for some reason you can't set the floor string to "" and then append it
+    // probably because PHP is a trash doo doo language
     if (floor === -1) {
       return apiRequest("/parking.php", "GET", `lot_id=${encodeURIComponent(lotID)}`)
     }
     return apiRequest("/parking.php", "GET", `lot_id=${encodeURIComponent(lotID)}&floor=${encodeURIComponent(floor)}`)
   },
-  addUser: async (userData: any) => {
-    return apiRequest("/users.php", "POST", "", userData)
+  // generate new permit for lot
+  newParkingSlip: async (lotID: number) => {
+    return apiRequest("/parking.php", "GET", `lot_id=${encodeURIComponent(lotID)}&action=park`)
   },
-  updateUser: async (userId: string, userData: any) => {
-    userData["id"] = userId
-    return apiRequest("/users.php", "PATCH", "", userData)
-  },
-  deleteUser: async (userId: string) => {
-    return apiRequest("/users.php", "DELETE", "", {id: userId})
+  // get total to charge for exiting car
+  customerCheckout: async (parkingSlip: string) => {
+    return apiRequest("/parking.php", "GET", `slip_id=${encodeURIComponent(parkingSlip)}&action=exit`)
   }
 }

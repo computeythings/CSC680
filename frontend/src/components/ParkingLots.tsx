@@ -2,6 +2,7 @@ import { useAuth } from '@/contexts/auth';
 import { parkingApi } from '@/services/ApiService';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from "react";
+import LotSelector from './ParkingLotSelector';
 
 interface Lot {
   id: number
@@ -11,7 +12,7 @@ interface Lot {
   street: string 
 }
 interface Slot {
-  id: number
+  slot_id: number
   level: number
   parked: string | null
 }
@@ -73,19 +74,7 @@ export default function ParkingLots() {
           <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
             <div className="flex flex-col w-full text-center">
               <h1 className="text-3xl font-bold my-4">PARKING LOTS</h1>
-              <div className="flex items-center justify-center relative p-4">
-                <span className="float-right">Parking Lot:</span>
-                <select value={selectedLot} onChange={onLotSelect} className="p-1 border">
-                  <option value={-1} disabled hidden>
-                    -- Select a Lot --
-                  </option>
-                  {lots.map(lot => (
-                    <option key={lot.id} value={lot.id}>
-                      {`${lot.street} ${lot.city}, ${lot.state} ${lot.zip_code}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <LotSelector selectedLot={selectedLot} onLotSelect={onLotSelect}/>
               <div className={`m-4 ${slots.length > 0 ? '' : 'hidden'}`}>
                 <table className="w-full text-center">
                   <thead>
@@ -110,7 +99,7 @@ export default function ParkingLots() {
                     </tr>
                     {/* Detailed Floor View */}
                     {[...floors().entries()].map(([floor, floorSlots]) => (
-                    <tr>
+                    <tr key={floor}>
                       <td>{`Floor ${floor}`}</td>
                       <td>{floorSlots.length}</td>
                       <td>{floorSlots.filter(item => item.parked === null).length}</td>

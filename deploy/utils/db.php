@@ -1,6 +1,7 @@
 <?php
 class DB {
     private static ?PDO $instance = null;
+    private static $usernames = [];
 
     // Prevent instantiation and cloning
     private function __construct() {}
@@ -29,6 +30,67 @@ class DB {
         }
 
         return self::$instance;
+    }
+
+    private static function getLicensePlate() {
+        $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $plate = '';
+        $plate .= random_int(1, 9);
+        for ($i = 0; $i < 3; $i++) {$plate .= $letters[random_int(0, 25)];}
+        for ($i = 0; $i < 3; $i++) {$plate .= random_int(0, 9);}
+        return $plate;
+    }
+
+    private static function getVehicle() {
+        $carMakesAndModels = [
+            'Toyota' => ['Camry', 'Corolla', 'RAV4', 'Prius', 'Highlander'],
+            'Honda' => ['Civic', 'Accord', 'CR-V', 'Pilot', 'Fit'],
+            'Ford' => ['F-150', 'Mustang', 'Explorer', 'Escape', 'Fusion'],
+            'Chevrolet' => ['Silverado', 'Malibu', 'Equinox', 'Tahoe', 'Impala'],
+            'BMW' => ['3 Series', '5 Series', 'X3', 'X5', '7 Series'],
+            'Mercedes-Benz' => ['C-Class', 'E-Class', 'GLC', 'GLE', 'S-Class'],
+            'Nissan' => ['Altima', 'Sentra', 'Rogue', 'Versa', 'Murano'],
+            'Volkswagen' => ['Golf', 'Passat', 'Tiguan', 'Jetta', 'Atlas'],
+            'Hyundai' => ['Elantra', 'Sonata', 'Tucson', 'Santa Fe', 'Venue'],
+            'Kia' => ['Soul', 'Sportage', 'Sorento', 'Forte', 'Optima'],
+            'Audi' => ['A3', 'A4', 'Q5', 'Q7', 'A6'],
+            'Subaru' => ['Outback', 'Forester', 'Impreza', 'Crosstrek', 'Legacy'],
+            'Mazda' => ['Mazda3', 'Mazda6', 'CX-5', 'CX-9', 'MX-5 Miata'],
+            'Tesla' => ['Model S', 'Model 3', 'Model X', 'Model Y'],
+            'Jeep' => ['Wrangler', 'Grand Cherokee', 'Cherokee', 'Compass', 'Renegade'],
+        ];
+        $makes = array_keys($carMakesAndModels);
+        $make = $makes[array_rand($makes)];
+        $models = $carMakesAndModels[$make];
+        $model = $models[array_rand($models)];
+        return ['make' => $make, 'model' => $model];
+    }
+
+    private static function getCustomerInfo() {
+        $res = @file_get_contents('https://randomuser.me/api/');
+        $data = @json_decode($res, true);
+        if ($res === false || !isset($data["results"][0]["name"]["first"]) || !isset($data["results"][0]["name"]["last"])) {
+            return [
+                "firstname" => "Random",
+                "lastname" => "Personson"
+            ];
+        }
+        return [
+            "firstname" => $data["results"][0]["name"]["first"],
+            "lastname" => $data["results"][0]["name"]["last"]
+        ];
+    }
+
+    private static function superCoolAIThatIdentifiesCarsAndPeopleAndStuff() {
+        $vehicle = self::getVehicle();
+        $customer = self::getCustomerInfo();
+        return [
+            "firstname" => $customer["firstname"],
+            "lastname" => $customer["lastname"],
+            "licenseplate" => self::getLicensePlate(),
+            "make" => $vehicle["make"],
+            "model" => $vehicle["model"]
+        ];
     }
 
     /*
@@ -173,7 +235,8 @@ class DB {
         return $res ?: [];
     }
 
-    public static function generateParkingSlip(array $customer, string $lot_id): array {
+    public static function generateParkingSlip(string $lot_id): array {
+        $customer = self::superCoolAIThatIdentifiesCarsAndPeopleAndStuff();
         $pdo = self::getInstance();
         $now = new DateTime();
         // add new customer
@@ -182,7 +245,7 @@ class DB {
                 VALUES(:firstname, :lastname, :licenseplate, :make, :model)
         ";
         $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(":firstname", $customer["lastname"], PDO::PARAM_STR);
+        $stmt->bindParam(":firstname", $customer["firstname"], PDO::PARAM_STR);
         $stmt->bindValue(':lastname', $customer["lastname"], PDO::PARAM_STR);
         $stmt->bindValue(':licenseplate', $customer["licenseplate"], PDO::PARAM_STR);
         $stmt->bindValue(':make', $customer["make"], PDO::PARAM_STR);
@@ -206,40 +269,39 @@ class DB {
         $slip_id = $pdo->lastInsertId();
 
         // get the spot number to put on the ticket
-        $sql = "SELECT spot FROM parking WHERE parked = :licenseplate LIMIT 1";
+        $sql = "SELECT spot FROM parking WHERE parked = :slip_id LIMIT 1";
         $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(":licenseplate", $customer["licenseplate"], PDO::PARAM_STR);
+        $stmt->bindParam(":slip_id", $slip_id, PDO::PARAM_STR);
         $stmt->execute();
         $spot = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return [
+        return array_merge([
             "slip_id" => $slip_id,
-            "licenseplate" => $customer['licenseplate'],
             "start" => $now->getTimestamp(),
-            "spot" => $spot
-        ];
+            "spot" => $spot["spot"]
+        ], $customer);
     }
 
     // car leaves the parking lot
-    public static function vehicleExit(int $slip_id): int {
+    public static function vehicleExit(int $slip_id): array|null {
         $pdo = self::getInstance();
         // set the end time of a parking slip
         $sql = "UPDATE parking_slip SET end = NOW() WHERE id = :id and end is NULL";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(":id", $slip_id, PDO::PARAM_INT);
         $stmt->execute();
-        if (!$rows) {
-            return -1;
+        if ($stmt->rowCount() == 0) {
+            return null;
         }
 
 
         // return the duration parked in minutes
-        $sql = "SELECT TIMESTAMPDIFF(MINUTE, start, end) FROM parking_slip WHERE id = :id";
+        $sql = "SELECT start, end FROM parking_slip WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(":id", $slip_id, PDO::PARAM_INT);
         $stmt->execute();
 
-        $minutes = $stmt->fetch(PDO::FETCH_ASSOC)["TIMESTAMPDIFF(MINUTE, start, end)"];
-        return $minutes;
+        $start = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $start;
     }
 }

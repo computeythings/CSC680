@@ -11,26 +11,8 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedUser, setSelectedUser] = useState("")
   const [selectedPassword, setSelectedPassword] = useState("")
-  const [passwords, setPasswords] = useState<Set<string>>(new Set([
-    "qT9!rE2z",
-    "L0g1n#Key",
-    "xYz$782!",
-    "M@nager42",
-    "sEcUr3#Me",
-    "pa55Word!",
-    "Zebra$94",
-    "T1me2Fly*"
-  ]));
-  const [users, setUsers] = useState<Set<string>>(new Set([
-    "jsmith",
-    "lwilliams",
-    "tjohnson",
-    "abrown",
-    "kdavis",
-    "mmiller",
-    "rwilson",
-    "smoore"
-  ]));
+  const [passwords, setPasswords] = useState<Set<string>>(new Set());
+  const [users, setUsers] = useState<Set<string>>(new Set());
   const addPassword = (value: string) => {
     setPasswords(prev => new Set(prev).add(value));
   };

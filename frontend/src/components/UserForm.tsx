@@ -22,6 +22,7 @@ export default function UserForm({ firstname="", lastname="", user="", password=
   const [fname, setFirstName] = useState("")
   const [lname, setLastName] = useState("")
   const [pwd, setPassword] = useState("")
+  const [submitFail, setSubmitFail] = useState(false)
   useEffect(() => {
     setFirstName(firstname)
     setLastName(lastname)
@@ -29,7 +30,19 @@ export default function UserForm({ firstname="", lastname="", user="", password=
     setPassword(password)
   }, [firstname, lastname, user, password])
 
+  // submit on enter
+  const submitIfEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    setSubmitFail(false)
+    if (e.key === "Enter") {
+      handleSubmit()
+    }
+  }
+
   const handleSubmit = () => {
+    if (!usr || !fname || !lname || !pwd) {
+        setSubmitFail(true) 
+        return
+    }
     onSubmit({ firstname: fname, lastname: lname, user: usr, password: pwd }).then(res => {
         if (res.statusCode == 200) {
             setUser("")
@@ -54,7 +67,8 @@ export default function UserForm({ firstname="", lastname="", user="", password=
                 type="text"
                 value={fname}
                 onChange={e => setFirstName(e.target.value)}
-                className="border px-3 py-1 rounded w-full"
+                onKeyDown={submitIfEnter}
+                className={`border px-3 py-1 rounded w-full focus: outline-none ${submitFail && !fname ? "border-red-500" : ""}`}
             />
 
         </div>
@@ -64,7 +78,8 @@ export default function UserForm({ firstname="", lastname="", user="", password=
                 type="text"
                 value={lname}
                 onChange={e => setLastName(e.target.value)}
-                className="border px-3 py-1 rounded w-full"
+                onKeyDown={submitIfEnter}
+                className={`border px-3 py-1 rounded w-full focus: outline-none ${submitFail && !lname ? "border-red-500" : ""}`}
             />
 
         </div>
@@ -74,7 +89,8 @@ export default function UserForm({ firstname="", lastname="", user="", password=
                 type="text"
                 value={usr}
                 onChange={e => setUser(e.target.value)}
-                className="border px-3 py-1 rounded w-full"
+                onKeyDown={submitIfEnter}
+                className={`border px-3 py-1 rounded w-full focus: outline-none ${submitFail && !usr ? "border-red-500" : ""}`}
             />
 
         </div>
@@ -84,7 +100,8 @@ export default function UserForm({ firstname="", lastname="", user="", password=
                 type="password"
                 value={pwd}
                 onChange={e => setPassword(e.target.value)}
-                className="border px-3 py-1 rounded w-full"
+                onKeyDown={submitIfEnter}
+                className={`border px-3 py-1 rounded w-full focus: outline-none ${submitFail && !pwd ? "border-red-500" : ""}`}
             />
         </div>
         <div className="flex justify-center">

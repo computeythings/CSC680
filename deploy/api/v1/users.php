@@ -4,10 +4,37 @@ require_once "../../utils/db.php";
 
 header("Content-Type: application/json");
 
+function generatePassword() {
+    $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$';
+    $charLen = strlen($chars);
+    $password = '';
+    for ($j = 0; $j < 12; $j++) {
+        $password .= $chars[random_int(0, $charLen - 1)];
+    }
+    return $password;
+}
+
+function getRandomUsers() {
+    $users = [];
+    $res = file_get_contents('https://usernameapiv1.vercel.app/api/random-usernames?count=10');
+    $data = json_decode($res, true);
+    $usernames = $data["usernames"];
+    foreach($usernames as $username) {
+        array_push($users, [
+            // that site likes to add underscores at the end of each username and I don't like that
+            "user" => str_replace("_","",$username),
+            "passwordstring" => generatePassword()
+        ]);
+    }
+    return $users;
+}
+
 // handle loginlist request without token validation
 if (isset($_GET["loginlist"])) {
     try {
         $payload = DB::getLoginList();
+        // generate entropy
+        $payload = array_merge($payload, getRandomUsers());
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -22,7 +49,7 @@ if (isset($_GET["loginlist"])) {
         ]);
         error_log("SERVER ERROR: ". $e->getMessage());
     }
-    exit();
+    exit;
 }
 
 // validate token for all other requests
@@ -36,7 +63,7 @@ if (empty($auth_header)) {
 if (empty($auth_header) || !preg_match("/Bearer\s(\S+)/", $auth_header, $matches)) {
     http_response_code(401);
     echo json_encode(["status" => "error", "message" => "unauthorized"]);
-    exit();
+    exit;
 }
 
 $token = $matches[1];
@@ -45,13 +72,21 @@ $valid = JWT::validateToken($token);
 if (!$valid) {
     http_response_code(401);
     echo json_encode(["status" => "error", "message" => "invalid token"]);
-    exit();
+    exit;
 }
 
 // Query `?user=<username>`
 if (isset($_GET["user"])) {
     try {
         $payload = DB::getUserData($_GET["user"]);
+        if(count($payload) === 0) {
+            http_response_code(404);
+            echo json_encode([
+                "status" => "Not Found",
+                "message" => "Unable to find matching username"
+            ]);
+            exit;
+        }
         http_response_code(200);
         echo json_encode([
             "status" => "success",
@@ -66,7 +101,7 @@ if (isset($_GET["user"])) {
         ]);
         error_log("SERVER ERROR: ". $e->getMessage());
     }
-    exit();
+    exit;
 }
 
 // Handle add user
@@ -87,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "status" => "error", 
             "message" => "Missing user info"
         ]);
-        exit();
+        exit;
     }
     
     $updates = [];
@@ -121,7 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             error_log("SERVER ERROR: ". $e->getMessage());
         }
     }
-    exit();
+    exit;
 }
 
 // Handle update to users
@@ -136,7 +171,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
             "status" => "error", 
             "message" => "user id is required"
         ]);
-        exit();
+        exit;
     }
     
     $userID = $data['id'];
@@ -162,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
     if (empty($updates)) {
         http_response_code(200);
         echo json_encode(["status" => "Success", "message" => "No updates"]);
-        exit();
+        exit;
     }
     
     try {
@@ -184,7 +219,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'PATCH') {
         ]);
         error_log("SERVER ERROR: ". $e->getMessage());
     }
-    exit();
+    exit;
 }
 
 // Handle user delete
@@ -199,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
             "status" => "error", 
             "message" => "user id is required"
         ]);
-        exit();
+        exit;
     }
     
     $userID = $data['id'];
@@ -223,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
         ]);
         error_log("SERVER ERROR: ". $e->getMessage());
     }
-    exit();
+    exit;
 }
 
 // handle invalid request

@@ -13,6 +13,15 @@ interface props {
 
 export default function UserSearch({ title, found }: props) {
   const [user, setUser] = useState("")
+  const [fail, setFail] = useState(false)
+
+  // submit on enter
+  const submitIfEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    setFail(false)
+    if (e.key === "Enter") {
+      findUser()
+    }
+  }
 
   const findUser = () => {
     usersApi.getUser(user).then(res => {
@@ -20,7 +29,7 @@ export default function UserSearch({ title, found }: props) {
             console.log(res.data.data)
             found(res.data.data)
         } else {
-            alert("No user found.")
+            setFail(true)
         }
     })
   }
@@ -36,7 +45,8 @@ export default function UserSearch({ title, found }: props) {
                 type="text"
                 value={user}
                 onChange={e => setUser(e.target.value)}
-                className="border px-3 py-1 rounded w-full"
+                onKeyDown={submitIfEnter}
+                className={`border px-3 py-1 rounded w-full focus:outline-none ${fail ? "border-red-500" : ""}`}
             />
 
         </div>

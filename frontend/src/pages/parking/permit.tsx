@@ -1,7 +1,7 @@
-import ParkingPermit from "@/components/ParkingPermit";
+import ParkingSlip from "@/components/ParkingSlip";
 
-export default function ParkingPermitPage() {
+export default function ParkingSlipPage() {
   return (
-    <ParkingPermit />
+    <ParkingSlip />
   );
 }
