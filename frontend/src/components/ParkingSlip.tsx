@@ -29,10 +29,8 @@ export default function ParkingParkingSlip() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(true)
   const [currentLot, setCurrentLot] = useState(-1)
-  const [lotFull, setLotFull] = useState(false)
   const [loadingParkingSlip, setLoadingParkingSlip] = useState(true)
   const [currentParkingSlip, setCurrentParkingSlip] = useState<ParkingSlip|null>(null)
-  const [failState, setFailState] = useState(false)
   const [state, setState] = useState(LotStatus.SUCCESS)
   const flash = useRef<{flash: () => void}>(null);
   useEffect(() => {
@@ -83,7 +81,7 @@ export default function ParkingParkingSlip() {
               <h1 className="text-3xl font-bold my-4">PARKING PERMITS</h1>
               <ParkingLotSelector selectedLot={currentLot} onLotSelect={onLotSelect} />
               <button 
-                className="cursor-pointer border mx-auto px-2 my-4 hover:shadow-sm"
+                className={`border mx-auto px-2 my-4 ${currentLot === -1 ? "text-gray-200" : "hover:shadow-sm cursor-pointer"}`}
                 onClick={generateParkingSlip}
                 >
                   Issue Parking Slip
