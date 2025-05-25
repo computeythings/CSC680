@@ -116,7 +116,7 @@ class DB {
         $pdo = self::getInstance();
 
         $stmt = $pdo->prepare("
-            SELECT id, user, password, firstname, lastname
+            SELECT id, user, password, firstname, lastname, role
             FROM user
             WHERE user = :user
         ");
@@ -142,7 +142,7 @@ class DB {
 
     public static function insertUser(array $userData): bool {
         $pdo = self::getInstance();
-        $columns = ['user', 'passwordstring', 'password', 'firstname', 'lastname'];
+        $columns = ['user', 'passwordstring', 'password', 'firstname', 'lastname', 'role'];
 
         // Build column and placeholder lists
         $columnNames = implode(', ', array_keys($userData));
@@ -254,11 +254,11 @@ class DB {
         $customer_id = $pdo->lastInsertId();
         // park into first empty slot
         $sql = "
-            INSERT INTO parking_slip (slot, customer, start)
-                SELECT slot_id, :customer, :created_at
+            INSERT INTO parking_slip (slot, customer, start, valet, carwash)
+                SELECT slot_id, :customer, :created_at, 0, 0
                 FROM parking
                 WHERE lot_id = :lot_id
-                AND parked IS NULL
+                AND parked IS NULL AND level != 1
                 LIMIT 1;
         ";
         $stmt = $pdo->prepare($sql);
@@ -303,5 +303,78 @@ class DB {
 
         $start = $stmt->fetch(PDO::FETCH_ASSOC);
         return $start;
+    }
+    
+    /*
+    *   /api/v1/valet functions
+    */
+
+    public static function getValetSpaces(string $lot_id): array {
+        $pdo = self::getInstance();
+        $sql = "
+                SELECT spot, slot_id, slip_id, firstname, lastname, licenseplate, make, model, carwash, washed, start
+                FROM valet
+                WHERE lot_id = :lot_id;
+            ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":lot_id", $lot_id, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $res = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $res ?: [];
+    }
+
+    public static function generateValetSlip(string $spot_id, bool $carwash): array {
+        $customer = self::superCoolAIThatIdentifiesCarsAndPeopleAndStuff();
+        $pdo = self::getInstance();
+        $now = new DateTime();
+        // add new customer
+        $sql = "
+            INSERT INTO customer (firstname, lastname, licenseplate, make, model)
+                VALUES(:firstname, :lastname, :licenseplate, :make, :model)
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":firstname", $customer["firstname"], PDO::PARAM_STR);
+        $stmt->bindValue(':lastname', $customer["lastname"], PDO::PARAM_STR);
+        $stmt->bindValue(':licenseplate', $customer["licenseplate"], PDO::PARAM_STR);
+        $stmt->bindValue(':make', $customer["make"], PDO::PARAM_STR);
+        $stmt->bindValue(':model', $customer["model"], PDO::PARAM_STR);
+        $stmt->execute();
+        $customer_id = $pdo->lastInsertId();
+        $customer["id"] = $customer_id;
+        // park into first empty slot
+        $sql = "
+            INSERT INTO parking_slip (slot, customer, start, valet, carwash)
+                SELECT :spot_id, :customer, :created_at, 1, :carwash;
+        ";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":spot_id", $spot_id, PDO::PARAM_STR);
+        $stmt->bindValue(':customer', $customer_id, PDO::PARAM_STR);
+        $stmt->bindValue(':created_at', $now->format('Y-m-d H:i:s'), PDO::PARAM_STR);
+        $stmt->bindParam(":carwash", $carwash, PDO::PARAM_INT);
+        $stmt->execute();
+        $slip_id = $pdo->lastInsertId();
+
+        // get the spot number to put on the ticket
+        $sql = "SELECT spot FROM parking WHERE parked = :slip_id LIMIT 1";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":slip_id", $slip_id, PDO::PARAM_STR);
+        $stmt->execute();
+        $spot = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return array_merge([
+            "slip_id" => $slip_id,
+            "start" => $now->getTimestamp()
+        ], $customer);
+    }
+
+    public static function washVehicle(string $slip_id): bool {
+        $pdo = self::getInstance();
+
+        $sql = "UPDATE valet SET washed = 1 WHERE slip_id = :slip_id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(":slip_id", $slip_id, PDO::PARAM_STR);
+
+        return $stmt->execute();
     }
 }

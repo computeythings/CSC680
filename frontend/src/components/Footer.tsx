@@ -8,7 +8,7 @@ export default function Footer() {
           <a href="mailto:acmeparking@aol.com" className="text-blue-600 hover:underline">
             Contact Us
           </a>
-          <span>Designed By: Bryan Gonnella</span>
+          <a href="https://github.com/computeythings/CSC680">Designed By: Bryan Gonnella</a>
         </div>
       </div>
     </footer>

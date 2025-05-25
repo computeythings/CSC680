@@ -1,7 +1,7 @@
-import ParkingSlip from "@/components/ParkingSlip";
+import ParkingSlipGenerator from "@/components/ParkingSlipGenerator";
 
 export default function ParkingSlipPage() {
   return (
-    <ParkingSlip />
+    <ParkingSlipGenerator />
   );
 }

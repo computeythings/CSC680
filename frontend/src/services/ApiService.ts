@@ -172,3 +172,22 @@ export const parkingApi = {
     return apiRequest("/parking.php", "GET", `slip_id=${encodeURIComponent(parkingSlip)}&action=exit`)
   }
 }
+
+export const valetApi = {
+  // get list of spaces in lot with option to specify floor
+  getLot: async (lotID: number) => {
+    return apiRequest("/valet.php", "GET", `lot_id=${encodeURIComponent(lotID)}`)
+  },
+  // generate new valet slip for lot
+  newParkingSlip: async (spotID: number, carwash: boolean = false) => {
+    return apiRequest("/valet.php", "GET", `spot_id=${encodeURIComponent(spotID)}&carwash=${encodeURIComponent(carwash)}&action=park`)
+  },
+  // get total to charge for exiting car
+  washVehicle: async (parkingSlip: string) => {
+    return apiRequest("/valet.php", "GET", `slip_id=${encodeURIComponent(parkingSlip)}&action=wash`)
+  },
+  // get total to charge for exiting car
+  customerCheckout: async (parkingSlip: string) => {
+    return apiRequest("/parking.php", "GET", `slip_id=${encodeURIComponent(parkingSlip)}&action=exit`)
+  }
+}

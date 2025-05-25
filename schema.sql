@@ -9,6 +9,7 @@ CREATE TABLE customer (
   licenseplate varchar(16) NOT NULL,
   make varchar(32) NOT NULL,
   model varchar(32) NOT NULL,
+  carwash boolean NOT NULL DEFAULT FALSE,
   PRIMARY KEY (id)
 );
 
@@ -48,13 +49,14 @@ CREATE TABLE parking_slip (
   customer int(11) NOT NULL,
   start timestamp NOT NULL,
   end timestamp,
+  valet boolean NOT NULL DEFAULT FALSE,
+  carwash boolean NOT NULL DEFAULT FALSE,
   PRIMARY KEY (id),
   KEY slot (slot),
   KEY customer (customer),
   FOREIGN KEY (slot) REFERENCES parking_slot (id),
   FOREIGN KEY (customer) REFERENCES customer (id)
 );
-
 --
 -- Table structure for table parking_slot
 --
@@ -79,8 +81,19 @@ CREATE TABLE user (
   password varchar(60) NOT NULL,
   firstname varchar(64) NOT NULL,
   lastname varchar(64) NOT NULL,
+  role varchar(64) NOT NULL,
+  FOREIGN KEY (role) REFERENCES role (name)
   PRIMARY KEY (id),
   UNIQUE (user)
+);
+
+--
+-- Table structure for user roles
+--
+
+CREATE TABLE role (
+  name varchar(64) NOT NULL,
+  PRIMARY KEY (name)
 );
 
 --
@@ -99,3 +112,27 @@ FROM parking_slot slot
 JOIN floor f ON slot.floor = f.id
 JOIN parking_lot lot ON f.lot = lot.id
 LEFT JOIN parking_slip slip ON slip.slot = slot.id AND slip.end IS NULL;
+
+--
+-- View for valet info
+--
+
+CREATE VIEW valet AS
+SELECT
+    slot.id AS slot_id,
+    slot.spot_number AS spot,
+    lot.id AS lot_id,
+    slip.id AS slip_id,
+    c.firstname,
+    c.lastname,
+    c.licenseplate,
+    c.make,
+    c.model,
+    slip.carwash,
+    c.carwash AS washed,
+    slip.start
+FROM parking_slot slot
+JOIN floor f ON slot.floor = f.id AND f.level = 1
+JOIN parking_lot lot ON f.lot = lot.id
+LEFT JOIN parking_slip slip ON slip.slot = slot.id AND slip.end IS NULL AND slip.valet
+LEFT JOIN customer c ON slip.customer = c.id;

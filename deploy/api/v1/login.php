@@ -45,14 +45,13 @@ try {
     $res = DB::getLoginData($username);
 
     if ($res && isset($res["user"]) && isset($res["password"])) {
-        $storedUser = $res["user"];
-        $storedHash = $res["password"];
-        if (password_verify($password, $storedHash)) {
+        if (password_verify($password, $res["password"])) {
             $token = JWT::generateToken([
                 "id" => $res["id"],
                 "firstName" => $res["firstname"],
                 "lastName" => $res["lastname"],
-                "username" => $storedUser,
+                "username" => $res["user"],
+                "role" => $res["role"],
                 "exp" => time() + (60 * 60 * 24 * 7)
             ]);
             

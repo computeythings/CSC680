@@ -132,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $updates['passwordstring'] = trim($data['password']);
     $updates['firstname'] = trim($data['firstname']);
     $updates['lastname'] = trim($data['lastname']);
+    $updates['role'] = trim($data['role']);
     
     try {
         DB::insertUser($updates);

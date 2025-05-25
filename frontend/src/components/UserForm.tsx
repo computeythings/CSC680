@@ -6,6 +6,7 @@ interface UserData {
   lastname: string;
   user: string;
   password: string;
+  role: string
 }
 
 interface props {
@@ -18,11 +19,13 @@ interface props {
 }
 
 export default function UserForm({ firstname="", lastname="", user="", password="", title, onSubmit }: props) {
+  const roles = ["admin", "valet", "parking_attendant"]
   const [usr, setUser] = useState("")
   const [fname, setFirstName] = useState("")
   const [lname, setLastName] = useState("")
   const [pwd, setPassword] = useState("")
   const [submitFail, setSubmitFail] = useState(false)
+  const [selectedRole, setSelectedRole] = useState("")
   useEffect(() => {
     setFirstName(firstname)
     setLastName(lastname)
@@ -43,12 +46,13 @@ export default function UserForm({ firstname="", lastname="", user="", password=
         setSubmitFail(true) 
         return
     }
-    onSubmit({ firstname: fname, lastname: lname, user: usr, password: pwd }).then(res => {
+    onSubmit({ firstname: fname, lastname: lname, user: usr, password: pwd, role: selectedRole }).then(res => {
         if (res.statusCode == 200) {
             setUser("")
             setFirstName("")
             setLastName("")
             setPassword("")
+            setSelectedRole("")
         } else {
             console.log(res)
             alert("Nope")
@@ -94,7 +98,7 @@ export default function UserForm({ firstname="", lastname="", user="", password=
             />
 
         </div>
-        <div className="p-4 pb-12">
+        <div className="p-4">
             Password:
             <input
                 type="password"
@@ -103,6 +107,21 @@ export default function UserForm({ firstname="", lastname="", user="", password=
                 onKeyDown={submitIfEnter}
                 className={`border px-3 py-1 rounded w-full focus: outline-none ${submitFail && !pwd ? "border-red-500" : ""}`}
             />
+        </div>
+        <div className="flex my-8">
+          <div className="ml-auto">Role:</div>
+          <div className="flex ml-4 mr-auto">
+          {roles.map(role => (
+            <label key={role} className="flex items-center space-x-2 mx-4">
+              <input
+                type="checkbox"
+                checked={selectedRole === role}
+                onChange={() => setSelectedRole(role)}
+              />
+              <span>{role}</span>
+            </label>
+          ))}
+          </div>
         </div>
         <div className="flex justify-center">
         <button 

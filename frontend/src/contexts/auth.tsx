@@ -14,6 +14,7 @@ interface UserInfo {
     firstName: string
     lastName: string
     username: string
+    role: string
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
