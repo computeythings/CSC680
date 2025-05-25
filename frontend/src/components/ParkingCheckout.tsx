@@ -1,7 +1,5 @@
-import { useAuth } from '@/contexts/auth';
 import { parkingApi } from '@/services/ApiService';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface SlipTimes {
   start: Date
@@ -9,25 +7,9 @@ interface SlipTimes {
 }
 
 export default function ParkingCheckout() {
-  const { user } = useAuth()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
   const [slipID, setSlipID] = useState("")
-  const [total, setTotal] = useState(0)
   const [slipTimes, setSlipTimes] = useState<SlipTimes|null>(null)
   const [badSlip, setBadSlip] = useState(false)
-  useEffect(() => {
-      setIsLoading(false)
-  }, [user, router])
-  if (isLoading) {
-    return null
-  }
-  if (!user) {
-    localStorage.setItem("redirect", "/parking/checkout/")
-    router.push('/login/')
-    return null
-  }
-  localStorage.removeItem("redirect")
 
   const dateFormat = (date: Date) => {
     const time = date.toLocaleTimeString("en-US", {

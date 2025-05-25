@@ -1,11 +1,8 @@
-import { useAuth } from '@/contexts/auth';
 import { parkingApi, valetApi } from '@/services/ApiService';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LotSelector from './ParkingLotSelector';
 import ValetSpot from './ValetSpot';
 import ValetCard from './ValetCard';
-import Receipt from './Receipt';
 
 interface Lot {
     id: number
@@ -33,28 +30,11 @@ interface ValetInfo {
 }
 
 export default function ValetParking() {
-    const { user } = useAuth()
-    const router = useRouter()
-    const [isLoading, setIsLoading] = useState(true)
     const [selectedLot, setSelectedLot] = useState<number>(-1);
     const [slots, setSlots] = useState<Slot[]>([])
     const [valetLot, setValetLot] = useState<ValetInfo[]>([])
     const [infoCard, setInfoCard] = useState<ValetInfo | null>(null)
     const [cardCoords, setCardCoords] = useState({top: 0, left: 0})
-
-    useEffect(() => {
-        setIsLoading(false)
-    }, [user, router])
-
-    if (isLoading) {
-        return null
-    }
-    if (!user) {
-        localStorage.setItem("redirect", "/valet/parking/")
-        router.push('/login/')
-        return null
-    }
-    localStorage.removeItem("redirect")
 
     const onLotSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selectedID = Number(e.target.value)

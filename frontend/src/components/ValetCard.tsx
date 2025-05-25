@@ -1,7 +1,7 @@
 'use client'
 
 import { valetApi } from '@/services/ApiService'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import Receipt from './Receipt'
 
 interface props {

@@ -1,5 +1,3 @@
-import { ApiResponse } from "@/services/ApiService";
-
 interface props {
     firstname: string
     lastname: string

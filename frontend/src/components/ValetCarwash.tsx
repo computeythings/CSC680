@@ -1,6 +1,4 @@
-import { useAuth } from '@/contexts/auth';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LotSelector from './ParkingLotSelector';
 import { valetApi } from '@/services/ApiService';
 
@@ -28,27 +26,6 @@ interface ValetInfo {
 export default function ValetCarwash() {
   const [selectedLot, setSelectedLot] = useState<number>(-1);
   const [valetLot, setValetLot] = useState<ValetInfo[]>([])
-  const { user } = useAuth()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  
-  useEffect(() => {
-    setIsLoading(false)
-  }, [user, router])
-
-  if (isLoading) {
-    return null
-  }
-  if (!user) {
-    localStorage.setItem("redirect", "/valet/carwash/")
-    router.push('/login/')
-    return null
-  }
-  // Redirect unauthorized roles
-  if (!["admin","valet"].includes(user.role)) {
-    router.push('/')
-  }
-  localStorage.removeItem("redirect")
   
   const onLotSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
       const selectedID = Number(e.target.value)

@@ -1,7 +1,5 @@
-import { useAuth } from '@/contexts/auth';
 import { parkingApi } from '@/services/ApiService';
-import { useRouter } from 'next/router';
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import LotSelector from './ParkingLotSelector';
 
 interface Lot {
@@ -18,34 +16,8 @@ interface Slot {
 }
 
 export default function ParkingLots() {
-  const { user } = useAuth()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
   const [selectedLot, setSelectedLot] = useState<number>(-1);
-  const [lots, setLots] = useState<Lot[]>([])
   const [slots, setSlots] = useState<Slot[]>([])
-
-  useEffect(() => {
-      parkingApi.getLots().then(res => {
-        if (res.statusCode == 200) {
-          setLots(res.data.data)
-        } else {
-          alert("Unable to connect to server.")
-        }
-      }).finally(() => {
-        setIsLoading(false)
-      })
-  }, [user, router])
-
-  if (isLoading) {
-    return null
-  }
-  if (!user) {
-    localStorage.setItem("redirect", "/parking/lots/")
-    router.push('/login/')
-    return null
-  }
-  localStorage.removeItem("redirect")
 
   const onLotSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedID = Number(e.target.value)

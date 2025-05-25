@@ -1,8 +1,5 @@
-import { useAuth } from "@/contexts/auth";
-import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import ScreenFlash from "./ScreenFlash";
-import Barcode from "./Barcode";
 import { parkingApi } from "@/services/ApiService";
 import ParkingLotSelector from "./ParkingLotSelector";
 import ParkingSlip from "./ParkingSlip";
@@ -26,26 +23,11 @@ enum LotStatus {
 }
 
 export default function ParkingSlipGenerator() {
-  const { user } = useAuth()
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
   const [currentLot, setCurrentLot] = useState(-1)
   const [loadingParkingSlip, setLoadingParkingSlip] = useState(true)
   const [currentParkingSlip, setCurrentParkingSlip] = useState<ParkingSlip|null>(null)
   const [state, setState] = useState(LotStatus.SUCCESS)
   const flash = useRef<{flash: () => void}>(null);
-  useEffect(() => {
-      setIsLoading(false)
-  }, [user, router])
-  if (isLoading) {
-    return null
-  }
-  if (!user) {
-    localStorage.setItem("redirect", "/parking/permit/")
-    router.push("/login/")
-    return null
-  }
-  localStorage.removeItem("redirect")
 
   const onLotSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedID = Number(e.target.value)

@@ -1,6 +1,4 @@
-import { useAuth } from '@/contexts/auth';
 import { parkingApi } from '@/services/ApiService';
-import { useRouter } from 'next/router';
 import { useEffect, useState } from "react";
 
 interface props {

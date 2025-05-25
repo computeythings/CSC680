@@ -1,5 +1,5 @@
 import { usersApi } from "@/services/ApiService";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface props {
     title: string
