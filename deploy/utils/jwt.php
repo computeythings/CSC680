@@ -30,7 +30,7 @@ class JWT {
     }
     
     // Check if the token is valid and signed by this server
-    public static function validateToken($token) {
+    public static function validateToken($token, $roles=[]) {
         if (!isset(self::$secret)) { 
             self::init(); 
         }
@@ -62,6 +62,20 @@ class JWT {
         if (isset($payload["exp"]) && $payload["exp"] < time()) {
             throw new Exception("Token has expired");
         }
+
+        // check roles if provided
+        if (count($roles) > 0 && !in_array($payload["role"], $roles, true)) {
+            $role = $payload["role"];
+            $rt = gettype($role);
+            $eqls = $payload["role"] == "valet";
+            error_log("$role not in list: type: $rt");
+            error_log("valet = valet: $eqls");
+            throw new Exception("Unauthorized role");
+        } else {
+            $role = $payload["role"];
+            error_log("$role in list");
+        }
+
         
         return $payload;
     }

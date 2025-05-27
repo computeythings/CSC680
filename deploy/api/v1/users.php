@@ -67,7 +67,17 @@ if (empty($auth_header) || !preg_match("/Bearer\s(\S+)/", $auth_header, $matches
 }
 
 $token = $matches[1];
-$valid = JWT::validateToken($token);
+try {
+    $valid = JWT::validateToken($token, ["admin"]);
+} catch (Exception $e) {
+    http_response_code(401);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Token validation error"
+    ]);
+    error_log("SERVER ERROR: ". $e->getMessage());
+    exit;
+}
 
 if (!$valid) {
     http_response_code(401);

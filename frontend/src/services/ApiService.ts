@@ -165,11 +165,11 @@ export const parkingApi = {
   },
   // generate new permit for lot
   newParkingSlip: async (lotID: number) => {
-    return apiRequest("/parking.php", "GET", `lot_id=${encodeURIComponent(lotID)}&action=park`)
+    return apiRequest("/parking.php", "POST", "", {lot_id: lotID, action: "park"})
   },
   // get total to charge for exiting car
   customerCheckout: async (parkingSlip: string) => {
-    return apiRequest("/parking.php", "GET", `slip_id=${encodeURIComponent(parkingSlip)}&action=exit`)
+    return apiRequest("/parking.php", "POST", "", {slip_id: parkingSlip, action: "exit"})
   }
 }
 
@@ -180,14 +180,14 @@ export const valetApi = {
   },
   // generate new valet slip for lot
   newParkingSlip: async (spotID: number, carwash: boolean = false) => {
-    return apiRequest("/valet.php", "GET", `spot_id=${encodeURIComponent(spotID)}&carwash=${encodeURIComponent(carwash)}&action=park`)
+    return apiRequest("/valet.php", "POST", "", {spot_id: spotID, carwash: carwash, action: "park"})
   },
   // get total to charge for exiting car
   washVehicle: async (parkingSlip: string) => {
-    return apiRequest("/valet.php", "GET", `slip_id=${encodeURIComponent(parkingSlip)}&action=wash`)
+    return apiRequest("/valet.php", "POST", "", {slip_id: parkingSlip, action: "wash"})
   },
   // get total to charge for exiting car
   customerCheckout: async (parkingSlip: string) => {
-    return apiRequest("/parking.php", "GET", `slip_id=${encodeURIComponent(parkingSlip)}&action=exit`)
+    return apiRequest("/parking.php", "POST", "", {slip_id: parkingSlip, action: "exit"})
   }
 }

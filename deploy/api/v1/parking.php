@@ -19,7 +19,19 @@ if (empty($auth_header) || !preg_match("/Bearer\s(\S+)/", $auth_header, $matches
 }
 
 $token = $matches[1];
-$valid = JWT::validateToken($token);
+try {
+    // Valet accesses parking API as well as parking_attendant and admin
+    $valid = JWT::validateToken($token, ["admin","parking_attendant","valet"]);
+} catch (Exception $e) {
+    http_response_code(401);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Token validation error"
+    ]);
+    error_log("SERVER ERROR: ". $e->getMessage());
+    exit;
+}
+
 
 if (!$valid) {
     http_response_code(401);
@@ -46,12 +58,15 @@ if ($_SERVER["REQUEST_METHOD"] === "GET" && empty($_SERVER["QUERY_STRING"])) {
     exit;
 }
 
-if (isset($_GET["action"])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // get json data from request body
-    $action = $_GET["action"];
+    $json_data = file_get_contents('php://input');
+    $data = json_decode($json_data, true);
+    // get json data from request body
+    $action = $data["action"];
     if (
-        ($action == "park" && !isset($_GET["lot_id"])) || 
-        ($action == "exit" && !isset($_GET["slip_id"]))
+        ($action == "park" && !isset($data["lot_id"])) || 
+        ($action == "exit" && !isset($data["slip_id"]))
     ) {
         http_response_code(400);
         echo json_encode([
@@ -63,7 +78,7 @@ if (isset($_GET["action"])) {
     try {
         switch ($action) {
             case "park":
-                $parking_slip = DB::generateParkingSlip($_GET["lot_id"]);
+                $parking_slip = DB::generateParkingSlip($data["lot_id"]);
                 http_response_code(200);
                 echo json_encode([
                     "status" => "success",
@@ -72,9 +87,9 @@ if (isset($_GET["action"])) {
                 ]);
                 break;
             case "exit":
-                $times = DB::vehicleExit($_GET["slip_id"]);
+                $times = DB::vehicleExit($data["slip_id"]);
                 if (!$times) {
-                    error_log("BAD CHECKOUT FOR " . $_GET["slip_id"]);
+                    error_log("BAD CHECKOUT FOR " . $data["slip_id"]);
                     http_response_code(409);
                     echo json_encode([
                         "status" => "error", 

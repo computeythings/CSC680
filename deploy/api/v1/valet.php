@@ -19,7 +19,17 @@ if (empty($auth_header) || !preg_match("/Bearer\s(\S+)/", $auth_header, $matches
 }
 
 $token = $matches[1];
-$valid = JWT::validateToken($token);
+try {
+    $valid = JWT::validateToken($token, ["admin","valet"]);
+} catch (Exception $e) {
+    http_response_code(401);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Token validation error"
+    ]);
+    error_log("SERVER ERROR: ". $e->getMessage());
+    exit;
+}
 
 if (!$valid) {
     http_response_code(401);
@@ -27,12 +37,16 @@ if (!$valid) {
     exit;
 }
 
-if (isset($_GET["action"])) {
+// Handle add user
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // get json data from request body
-    $action = $_GET["action"];
+    $json_data = file_get_contents('php://input');
+    $data = json_decode($json_data, true);
+    // get json data from request body
+    $action = $data["action"];
     if (
-        ($action == "park" && !(isset($_GET["spot_id"]) && isset($_GET["carwash"]))) || 
-        (($action == "exit" || $action == "wash") && !isset($_GET["slip_id"]))
+        ($action == "park" && !(isset($data["spot_id"]) && isset($data["carwash"]))) || 
+        (($action == "exit" || $action == "wash") && !isset($data["slip_id"]))
     ) {
         http_response_code(400);
         echo json_encode([
@@ -44,7 +58,7 @@ if (isset($_GET["action"])) {
     try {
         switch ($action) {
             case "park":
-                $parking_slip = DB::generateValetSlip($_GET["spot_id"], $_GET["carwash"] === "true");
+                $parking_slip = DB::generateValetSlip($data["spot_id"], $data["carwash"] === "true");
                 http_response_code(200);
                 echo json_encode([
                     "status" => "success",
@@ -53,9 +67,9 @@ if (isset($_GET["action"])) {
                 ]);
                 break;
             case "wash":
-                $washed = DB::washVehicle($_GET["slip_id"]);
+                $washed = DB::washVehicle($data["slip_id"]);
                 if (!$washed) {
-                    error_log("UNABLE TO WASH " . $_GET["slip_id"]);
+                    error_log("UNABLE TO WASH " . $data["slip_id"]);
                     http_response_code(500);
                     echo json_encode([
                         "status" => "error", 
@@ -71,9 +85,9 @@ if (isset($_GET["action"])) {
                 ]);
                 break;
             case "exit":
-                $times = DB::vehicleExit($_GET["slip_id"]);
+                $times = DB::vehicleExit($data["slip_id"]);
                 if (!$times) {
-                    error_log("BAD CHECKOUT FOR " . $_GET["slip_id"]);
+                    error_log("BAD CHECKOUT FOR " . $data["slip_id"]);
                     http_response_code(409);
                     echo json_encode([
                         "status" => "error", 
