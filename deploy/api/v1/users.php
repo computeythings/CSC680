@@ -16,16 +16,22 @@ function generatePassword() {
 
 function getRandomUsers() {
     $users = [];
-    $res = file_get_contents('https://usernameapiv1.vercel.app/api/random-usernames?count=10');
-    $data = json_decode($res, true);
-    $usernames = $data["usernames"];
-    foreach($usernames as $username) {
+    
+    $res = @file_get_contents('https://randomuser.me/api/?results=10');
+    $data = @json_decode($res, true);
+    if ($res === false || !isset($data["results"][0]["login"]["username"]) || !isset($data["results"][0]["login"]["password"])) {
+        return [
+            "user" => "RandomUser",
+            "passwordstring" => "RandomPasssword"
+        ];
+    }
+    foreach($data["results"] as $userinfo) {
         array_push($users, [
-            // that site likes to add underscores at the end of each username and I don't like that
-            "user" => str_replace("_","",$username),
-            "passwordstring" => generatePassword()
+            "user" => $userinfo["login"]["username"] ?? "RandomUser",
+            "passwordstring" => $userinfo["login"]["password"] ?? "RandomPassword"
         ]);
     }
+
     return $users;
 }
 
