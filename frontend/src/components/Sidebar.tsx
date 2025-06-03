@@ -15,7 +15,8 @@ export default function Sidebar() {
     { name: 'Home', href: '/', roles: ["admin", "valet", "parking_attendant"] }, 
     { name: 'Users', href: '/users/', roles: ["admin"] }, 
     { name: 'Parking', href: '/parking/', roles: ["admin", "parking_attendant"] }, 
-    { name: 'Valet', href: '/valet/', roles: ["admin", "valet"] }
+    { name: 'Valet', href: '/valet/', roles: ["admin", "valet"] },
+    { name: 'Training', href: '/training/', roles: ["admin", "parking_attendant", "valet"] }
   ]
   const subMenus: Record<string, MenuItem[]> = {
     'users' : [
@@ -31,6 +32,11 @@ export default function Sidebar() {
     'valet': [
       { name: 'Parking', href: '/valet/parking/' },
       { name: 'Car Wash', href: '/valet/carwash/' },
+    ],
+    'training': [
+      { name: 'Valet', href: '/training/valet/' },
+      { name: 'Parking Attendant', href: '/training/parking/' },
+      { name: 'User Management', href: '/training/admin/' }
     ]
   }
   const basePath = usePathname().split('/')[1]
