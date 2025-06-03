@@ -7,7 +7,7 @@ export default function TrainingAdmin() {
               <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                   <div className="flex flex-col w-full text-center">
                       <h1 className="text-3xl font-bold my-4">How to Add User</h1>
-                      <TrainingVideo src="/videos/how-to-add-user.mp4" />
+                      <TrainingVideo src="https://csc680-public-resources.s3.us-west-1.amazonaws.com/how-to-add-user.mp4" />
                       <ol className="list-decimal list-inside text-left mx-auto font-bold my-4">
                           <li>From the Home page, click the Users link in the sidebar</li>
                           <li>Next Click the Add User sub-menu</li>
@@ -21,7 +21,7 @@ export default function TrainingAdmin() {
               <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                   <div className="flex flex-col w-full text-center">
                       <h1 className="text-3xl font-bold my-4">How to Update User</h1>
-                      <TrainingVideo src="/videos/how-to-update-user.mp4" />
+                      <TrainingVideo src="https://csc680-public-resources.s3.us-west-1.amazonaws.com/how-to-update-user.mp4" />
                       <ol className="list-decimal list-inside text-left mx-auto font-bold my-4">
                           <li>From the Users page, click the Update User link in the sidebar</li>
                           <li>Enter the username of the user you wish to update</li>
@@ -36,7 +36,7 @@ export default function TrainingAdmin() {
               <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                   <div className="flex flex-col w-full text-center">
                       <h1 className="text-3xl font-bold my-4">How to Delete User</h1>
-                      <TrainingVideo src="/videos/how-to-delete-user.mp4" />
+                      <TrainingVideo src="https://csc680-public-resources.s3.us-west-1.amazonaws.com/how-to-delete-user.mp4" />
                       <ol className="list-decimal list-inside text-left mx-auto font-bold my-4">
                           <li>From the Users page, click the Delete User link in the sidebar</li>
                           <li>Enter the username of the user you wish to delete</li>

@@ -7,7 +7,7 @@ export default function TrainingLot() {
             <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                 <div className="flex flex-col w-full text-center">
                     <h1 className="text-3xl font-bold my-4">How to View Parking Lots</h1>
-                    <TrainingVideo src="/videos/how-to-view-lots.mp4" />
+                    <TrainingVideo src="https://csc680-public-resources.s3.us-west-1.amazonaws.com/how-to-view-lots.mp4" />
                     <ol className="list-decimal list-inside text-left mx-auto font-bold my-4">
                         <li>From the Home page, click the Parking link in the sidebar</li>
                         <li>Next Click the Lots sub-menu</li>
@@ -21,7 +21,7 @@ export default function TrainingLot() {
             <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                 <div className="flex flex-col w-full text-center">
                     <h1 className="text-3xl font-bold my-4">How to Get Parking Slip</h1>
-                    <TrainingVideo src="/videos/how-to-parking-slip.mp4" />
+                    <TrainingVideo src="https://csc680-public-resources.s3.us-west-1.amazonaws.com/how-to-parking-slip.mp4" />
                     <ol className="list-decimal list-inside text-left mx-auto font-bold my-4">
                         <li>From the Parking page, click the Permit sub-menu</li>
                         <li>Select your parking lot</li>
@@ -34,7 +34,7 @@ export default function TrainingLot() {
             <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                 <div className="flex flex-col w-full text-center">
                     <h1 className="text-3xl font-bold my-4">How to Checkout</h1>
-                    <TrainingVideo src="/videos/how-to-parking-checkout.mp4" />
+                    <TrainingVideo src="https://csc680-public-resources.s3.us-west-1.amazonaws.com/how-to-parking-checkout.mp4" />
                     <ol className="list-decimal list-inside text-left mx-auto font-bold my-4">
                         <li>From the Parking page, click the Checkout sub-menu</li>
                         <li>As the customer leaves, scan their parking slip or enter the number manually</li>

@@ -7,7 +7,7 @@ export default function TrainingValet() {
             <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                 <div className="flex flex-col w-full text-center">
                     <h1 className="text-3xl font-bold my-4">How to Park</h1>
-                    <TrainingVideo src="/videos/how-to-valet-car.mp4" />
+                    <TrainingVideo src="https://csc680-public-resources.s3.us-west-1.amazonaws.com/how-to-valet-car.mp4" />
                     <ol className="list-decimal list-inside text-left mx-auto font-bold my-4">
                         <li>From the Home page, click the Valet link in the sidebar</li>
                         <li>Next Click the Parking sub-menu</li>
@@ -23,7 +23,7 @@ export default function TrainingValet() {
             <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                 <div className="flex flex-col w-full text-center">
                     <h1 className="text-3xl font-bold my-4">How to Carwash</h1>
-                    <TrainingVideo src="/videos/how-to-carwash.mp4" />
+                    <TrainingVideo src="https://csc680-public-resources.s3.us-west-1.amazonaws.com/how-to-carwash.mp4" />
                     <ol className="list-decimal list-inside text-left mx-auto font-bold my-4">
                         <li>From the Valet page, click the Car Wash sub menu</li>
                         <li>Select your current parking lot</li>
@@ -38,7 +38,7 @@ export default function TrainingValet() {
             <div className="bg-white mx-auto gap-4 text-black w-3/4 border">
                 <div className="flex flex-col w-full text-center">
                     <h1 className="text-3xl font-bold my-4">How to Checkout</h1>
-                    <TrainingVideo src="/videos/how-to-valet-checkout.mp4" />
+                    <TrainingVideo src="https://csc680-public-resources.s3.us-west-1.amazonaws.com/how-to-valet-checkout.mp4" />
                     <ol className="list-decimal list-inside text-left mx-auto font-bold my-4">
                         <li>From the Valet page, click the Parking sub menu</li>
                         <li>Find the spot you wish to checkout and click it</li>
